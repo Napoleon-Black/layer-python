@@ -28,6 +28,7 @@ LAYER_URI_USERS_BADGE = 'badge'
 
 LAYER_URI_RECEIPTS = 'receipts'
 
+
 class LayerPlatformException(Exception):
     def __init__(self, message, http_code=None, code=None, error_id=None):
         super(LayerPlatformException, self).__init__(message)
@@ -176,6 +177,16 @@ class PlatformClient(object):
                 http_code=result.status_code,
             )
 
+    def get_user_conversations(self, identity_id):
+
+        return self._raw_request(
+            METHOD_GET,
+            self._get_layer_uri(
+                LAYER_URI_USERS,
+                identity_id,
+                LAYER_URI_CONVERSATIONS)
+            )
+
     def get_conversation(self, conversation_uuid):
         """
         Fetch an existing conversation by UUID
@@ -261,6 +272,23 @@ class PlatformClient(object):
             ]
         )
 
+    def create_identity(self, identity):
+        '''
+        Create metadata of user
+
+        :param identity: `Sender` object
+        :return: `Response` object
+        '''
+        return self._raw_request(
+            METHOD_POST,
+            self._get_layer_uri(
+                LAYER_URI_USERS,
+                identity.id,
+                LAYER_URI_USERS_IDENTITY
+                ),
+            identity.as_dict()
+            )
+
     def replace_identity(self, identity):
         '''
         Updates metadata of user
@@ -340,6 +368,21 @@ class PlatformClient(object):
                 }
             )
         )
+
+    def retrieving_messages(self, user_id, conversation_uuid):
+        """
+        Load all messages in a conversation
+        from a specific user's perspective
+        """
+        return self._raw_request(
+            METHOD_GET,
+            self._get_layer_uri(
+                LAYER_URI_USERS,
+                user_id,
+                LAYER_URI_CONVERSATIONS,
+                conversation_uuid,
+                LAYER_URI_MESSAGES
+            ))
 
     def send_message(self, conversation, sender, message_parts,
                      notification=None):
